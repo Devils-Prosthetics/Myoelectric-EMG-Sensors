@@ -1,11 +1,11 @@
-#include <EloquentTinyML.h>
-#include <eloquent_tinyml/tensorflow.h>
+#include "model.h"
+#include <tflm_cortexm.h>
+#include <eloquent_tinyml.h>
 
 #include "Arduino.h"
 #include "EMGFilters.h"
 #include "arduinoFFT.h"
 
-#include "model.h"
 
 // Printing options
 #define DEBUG 1
@@ -16,7 +16,8 @@
 
 #define NUMBER_OF_INPUTS 198
 #define NUMBER_OF_OUTPUTS 3
-#define TENSOR_ARENA_SIZE 100000
+#define ARENA_SIZE 100000
+#define TF_NUM_OPS 2
 
 #define SCL_INDEX 0x00
 #define SCL_TIME 0x01
@@ -60,7 +61,7 @@ double vImag1[samples];
 double vImag2[samples];
 double vImag3[samples];
 
-Eloquent::TinyML::TensorFlow::TensorFlow<NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS, TENSOR_ARENA_SIZE> tf;
+Eloquent::TF::Sequential<TF_NUM_OPS, ARENA_SIZE> tf;
 
 int i = 0;
 void setEmgSensor() {
@@ -201,9 +202,17 @@ void processFFT () {
   }
   
   if (RUN_ML) {
-    tf.predict(input, output);
+    if (!tf.predict(input).isOk()) {
+        //Serial.println(tf.exception.toString());
+        return;
+    }
+
     Serial.print("classification: ");
-    printClassification(output);
+    Serial.println(tf.classification);
+
+    Serial.print("It takes ");
+    Serial.print(tf.benchmark.microseconds());
+    Serial.println("us for a single prediction");
   }
 
   if (DEBUG && RUN_ML) {
@@ -219,7 +228,15 @@ void setup() {
   Serial.begin(115200);
 
   myFilter.init(sampleRate, humFreq, true, true, true);
-  tf.begin(g_model);
+  
+  tf.setNumInputs(NUMBER_OF_INPUTS);
+  tf.setNumOutputs(NUMBER_OF_OUTPUTS);
+  tf.resolver.AddSoftmax();
+  tf.resolver.AddRelu();
+
+  while (!tf.begin(emg_model).isOk()) {
+    // Serial.println(tf.exception.toString());
+  }
 }
 
 void loop() {

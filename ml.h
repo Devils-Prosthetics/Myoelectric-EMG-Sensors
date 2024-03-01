@@ -1,10 +1,7 @@
 #ifndef ML_H_
 #define ML_H_
 
-#define NUMBER_OF_INPUTS 198
-#define NUMBER_OF_OUTPUTS 3
-#define ARENA_SIZE 10000
-#define NUM_OPS 2
+// Standard header file, just look at ml.cpp for the implementation
 
 void setupML();
 float* flattenInput(double vReal1[], double majorPeak1, double majorPeakParabola1,

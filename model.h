@@ -3,4 +3,4 @@
 
 extern const unsigned char emg_model[];
 
-#endif  // TENSORFLOW_LITE_MICRO_EXAMPLES_HELLO_WORLD_MODEL_H_
+#endif

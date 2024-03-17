@@ -37,16 +37,16 @@ void setupML() {
 }
 
 /**
- * Flatten the input into a single array. The input is a multitude of single dimensional arrays and two doubles. The first double is the major peak of the first array, the second double is the major peak of the parabola of the first array.
+ * Flatten the input into a single array. The input is a multitude of single dimensional arrays and two floats. The first float is the major peak of the first array, the second float is the major peak of the parabola of the first array.
  * This must be done because the model only accepts a single array of inputs. Also remember to free this function after your done.
  * Somethings to note, the order in the output array is decided by however the data was outputted in the SENSOR_OUTPUT section in the main file. Without recreating this order in the array you'll just get garbage out.
  * Also this assumes that you have the correct number of inputs in each array. If you don't the program can crash or you'll get garbage out.
  */
-float* flattenInput(double vReal1[], double majorPeak1, double majorPeakParabola1,
-                    double vReal2[], double majorPeak2, double majorPeakParabola2,
-                    double vReal3[], double majorPeak3, double majorPeakParabola3) {
+float* flattenInput(float vReal1[], float majorPeak1, float majorPeakParabola1,
+                    float vReal2[], float majorPeak2, float majorPeakParabola2,
+                    float vReal3[], float majorPeak3, float majorPeakParabola3) {
     
-    float* input = (float*)malloc(NUMBER_OF_INPUTS * sizeof(float));    // Allocate the memory for the input array which then will be returned
+    float* input = new float[NUMBER_OF_INPUTS];    // Allocate the memory for the input array which then will be returned
     if (input == NULL) {    // If the memory allocation fails, print an error
         Serial.println("Failed to allocate memory!");
         return NULL;
@@ -61,20 +61,20 @@ float* flattenInput(double vReal1[], double majorPeak1, double majorPeakParabola
      */
     int i = 0;
     while (true) {
-        if (i < vReal1Length) input[i++] = (float)vReal1[i];
-        else if (i < vReal1Length + vReal2Length) input[i++] = (float)vReal2[i - vReal1Length];
-        else if (i < vReal1Length + vReal2Length + vReal3Length) input[i++] = (float)vReal3[i - vReal1Length - vReal2Length];
+        if (i < vReal1Length) input[i++] = vReal1[i];
+        else if (i < vReal1Length + vReal2Length) input[i++] = vReal2[i - vReal1Length];
+        else if (i < vReal1Length + vReal2Length + vReal3Length) input[i++] = vReal3[i - vReal1Length - vReal2Length];
         else break;
     }
 
-    input[i++] = (float)majorPeak1;
-    input[i++] = (float)majorPeakParabola1;
+    input[i++] = majorPeak1;
+    input[i++] = majorPeakParabola1;
 
-    input[i++] = (float)majorPeak2;
-    input[i++] = (float)majorPeakParabola2;
+    input[i++] = majorPeak2;
+    input[i++] = majorPeakParabola2;
 
-    input[i++] = (float)majorPeak3;
-    input[i++] = (float)majorPeakParabola3;
+    input[i++] = majorPeak3;
+    input[i++] = majorPeakParabola3;
 
     return input;
 }
@@ -110,9 +110,9 @@ void executeML(float* input) {
 /**
  * Run the machine learning model with the input arrays. This will print the input arrays, the normalized input arrays, and the classification of the model.
  */
-void runML(double vReal1[], double majorPeak1, double majorPeakParabola1,
-           double vReal2[], double majorPeak2, double majorPeakParabola2,
-           double vReal3[], double majorPeak3, double majorPeakParabola3) {
+void runML(float vReal1[], float majorPeak1, float majorPeakParabola1,
+           float vReal2[], float majorPeak2, float majorPeakParabola2,
+           float vReal3[], float majorPeak3, float majorPeakParabola3) {
 
     float* input = flattenInput(vReal1, majorPeak1, majorPeakParabola1,
                                 vReal2, majorPeak2, majorPeakParabola2,
@@ -150,5 +150,5 @@ void runML(double vReal1[], double majorPeak1, double majorPeakParabola1,
         executeML(input);
     }
 
-    free(input);    // Free the memory allocated for the input array
-
+    delete[] input;    // Free the memory allocated for the input array
+}

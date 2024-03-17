@@ -21,7 +21,9 @@ void loop() {
 
 /* ========================================== FUNCTIONS ========================================== */
 // Callback function for when the emg data is processed
-void emgDataProcessedCallback(double vReal1[], double majorPeak1, double majorPeakParabola1, double vReal2[], double majorPeak2, double majorPeakParabola2, double vReal3[], double majorPeak3, double majorPeakParabola3) {
+void emgDataProcessedCallback(float vReal1[], float majorPeak1, float majorPeakParabola1,
+                              float vReal2[], float majorPeak2, float majorPeakParabola2,
+                              float vReal3[], float majorPeak3, float majorPeakParabola3) {
     if (SENSOR_OUTPUT) { // If sensor output is enabled print the data
         Serial.println("NewData");              // This is significant as the Serial-to-ML program will look for this to know when to start reading data into the csv
         PrintVector(vReal1);
@@ -41,9 +43,10 @@ void emgDataProcessedCallback(double vReal1[], double majorPeak1, double majorPe
 }
 
 // Print the vector
-void PrintVector(double *vData) {
+void PrintVector(float *vData) {
     int vDataLength = sizeof(vData) / sizeof(vData[0]);
     for (uint16_t i = 0; i < vDataLength; i++) {
         Serial.println(vData[i]);
     }
 }
+

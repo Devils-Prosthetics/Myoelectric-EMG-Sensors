@@ -18,9 +18,9 @@
  * Part of the EMGFilters library, made by the manufactor of the EMG sensors currently in use. See more information here https://github.com/oymotion/EMGFilters
  */
 EMGFilters myFilter;
-arduinoFFT FFT1;
-arduinoFFT FFT2;
-arduinoFFT FFT3;
+ArduinoFFT<float> FFT1;
+ArduinoFFT<float> FFT2;
+ArduinoFFT<float> FFT3;
 
 SAMPLE_FREQUENCY sampleRate = SAMPLE_FREQ_1000HZ;
 NOTCH_FREQUENCY humFreq = NOTCH_FREQ_60HZ; // 60HZ for US 50HZ for Europe
@@ -30,7 +30,6 @@ const uint16_t samples = 64; //This value MUST ALWAYS be a power of 2
 const double signalFrequency = 1000;
 const double samplingFrequency = 5000;
 const uint8_t amplitude = 100;
-double cycles = (((samples - 1) * signalFrequency) / samplingFrequency); //Number of signal cycles that the sampling will read
 
 
 /* ========================================== VARIABLES ========================================== */
@@ -40,13 +39,13 @@ static int threshold2 = 0;
 static int threshold3 = 0;
 
 // The real and imaginary parts of the FFT. This is pretty technical, so if you want to know more look at https://github.com/kosme/arduinoFFT
-double vReal1[samples];
-double vReal2[samples];
-double vReal3[samples];
+float* vReal1 = new float[samples];
+float* vReal2 = new float[samples];
+float* vReal3 = new float[samples];
 
-double vImag1[samples];
-double vImag2[samples];
-double vImag3[samples];
+float* vImag1 = new float[samples];
+float* vImag2 = new float[samples];
+float* vImag3 = new float[samples];
 
 /* ========================================== FUNCTIONS ========================================== */
 /**
@@ -107,32 +106,32 @@ void setEmgSensor(CallbackFunction callback) {
  */
 void processFFT (CallbackFunction callback) {
     // Initialize arduinoFFT 
-    FFT1 = arduinoFFT(vReal1, vImag1, samples, samplingFrequency);
-    FFT2 = arduinoFFT(vReal2, vImag2, samples, samplingFrequency);
-    FFT3 = arduinoFFT(vReal3, vImag3, samples, samplingFrequency);
+    FFT1 = ArduinoFFT<float>(vReal1, vImag1, samples, samplingFrequency);
+    FFT2 = ArduinoFFT<float>(vReal2, vImag2, samples, samplingFrequency);
+    FFT3 = ArduinoFFT<float>(vReal3, vImag3, samples, samplingFrequency);
     
     // Window, then compute, then convert to magnitude for each FFT
-    FFT1.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-    FFT1.Compute(FFT_FORWARD);
-    FFT1.ComplexToMagnitude();
+    FFT1.windowing(FFTWindow::Hamming, FFTDirection::Forward);
+    FFT1.compute(FFTDirection::Forward);
+    FFT1.complexToMagnitude();
 
-    FFT2.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-    FFT2.Compute(FFT_FORWARD);
-    FFT2.ComplexToMagnitude();
+    FFT2.windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+    FFT2.compute(FFT_FORWARD);
+    FFT2.complexToMagnitude();
 
-    FFT3.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-    FFT3.Compute(FFT_FORWARD);
-    FFT3.ComplexToMagnitude();
+    FFT3.windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+    FFT3.compute(FFT_FORWARD);
+    FFT3.complexToMagnitude();
 
 
     // Get the major peaks and major peak parabolas for each FFT
-    double majorPeak1 = FFT1.MajorPeak();
-    double majorPeak2 = FFT2.MajorPeak();
-    double majorPeak3 = FFT3.MajorPeak();
+    float majorPeak1 = FFT1.majorPeak();
+    float majorPeak2 = FFT2.majorPeak();
+    float majorPeak3 = FFT3.majorPeak();
 
-    double majorPeakParabola1 = FFT1.MajorPeakParabola();
-    double majorPeakParabola2 = FFT2.MajorPeakParabola();
-    double majorPeakParabola3 = FFT3.MajorPeakParabola();
+    float majorPeakParabola1 = FFT1.majorPeakParabola();
+    float majorPeakParabola2 = FFT2.majorPeakParabola();
+    float majorPeakParabola3 = FFT3.majorPeakParabola();
 
     // Call the callback function while passing the processed vReal arrays, major peaks and major peak parabolas
     callback(vReal1, majorPeak1, majorPeakParabola1, vReal2, majorPeak2, majorPeakParabola2, vReal3, majorPeak3, majorPeakParabola3);
